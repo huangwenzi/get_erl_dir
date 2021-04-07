@@ -5,7 +5,7 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 8. 3月 2021 20:26
+%%% Created : 7. 4月 2021 10:51
 %%%-------------------------------------------------------------------
 
 -module(guild_rpc).
@@ -13,7 +13,7 @@
 
 -include("erl_protocol_record.hrl").
 
-%% API
+% API
 -export([handle/2]).
     
 %% 请求玩家的部族数据
@@ -356,4 +356,13 @@ handle(#guild_hunting_receive_request{}, Player) ->
             {reply, Notify};
         {false, Code} ->
             {reply, #guild_hunting_receive_reply{code = Code}}
+    end;
+
+%% 部族狩猎新的被阻击日志（只显示新被阻击的日志）
+handle(#guild_hunting_blocking_rec_new_request{}, Player) ->
+    case guild_lib:hunting_blocking_rec_new(Player) of
+        {ok, Notify} ->
+            {reply, Notify};
+        {false, Code} ->
+            {reply, #guild_hunting_blocking_rec_new_reply{code = Code}}
     end.

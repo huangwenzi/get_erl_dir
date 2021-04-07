@@ -5,36 +5,65 @@ import datetime
 
 
 
-import mod_protocol.guild as mod
+import mod_protocol.bargain as mod
+_g_mod_name = "bargain"
 
 
+# record字段长度
+_g_record_len = 32
 
+
+## 获取函数
 # 获取协议对应的函数名
 def get_fun_name(protocol_key):
     begin = protocol_key.find("_")
     end = protocol_key.rfind("_")
     return protocol_key[begin+1 : end]
 
-# 获取协议参数
+# 获取请求协议
+def get_request_key():
+    # 遍历协议
+    protocol_list = mod.protocol_define.keys()
+    key_list = []
+    for protocol_key in protocol_list:
+        if protocol_key.find("_notify") > 0 or protocol_key.find("_reply") > 0:
+            continue
+        key_list.append(protocol_key)
+    return key_list
+
+# 获取协议参数 首字母 下划线后一个替换大写
 def get_param_name(param):
     while True:
         idx = param.find("_")
         # 替换完退出
         if idx < 0:
+            # 首字母替换大写
             param = param[:1].upper() + param[1:]
             return param
-        # 替换大写
+        # 下划线去掉，后一个替换大写
         tmp_1 = param[idx+1]
         tmp_1 = tmp_1.upper()
         param = param[:idx] + tmp_1 + param[idx+2:]
 
+# 获取函数参数
+def get_param_str(protocol_obj):
+    # 遍历参数
+    param_str = ""              # 获取协议参数
+    param_str_1 = "Player, "    # lib函数参数
+    for tmp_param in protocol_obj["payload"]:
+        tmp_param_1 = get_param_name(tmp_param[0])
+        param_str += "%s = %s, "%(tmp_param[0], tmp_param_1)
+        param_str_1 += "%s, "%(tmp_param_1)
+    if len(param_str) > 0:
+        param_str = param_str[:-2]
+    param_str_1 = param_str_1[:-2]
+    return param_str,param_str_1
 
-# 获取rpc文件
-def get_rpc_file(mod_name):
+# 获取开头
+def get_file_head_str():
     # 时间
     i = datetime.datetime.now()
-    str = ""
-    str += """
+    str = """
 %%%%%%-------------------------------------------------------------------
 %%%%%% @author hw
 %%%%%% @copyright (C) %s, <COMPANY>
@@ -45,9 +74,12 @@ def get_rpc_file(mod_name):
 %%%%%%-------------------------------------------------------------------
 """""
     str = str%(i.year, i.day, i.month, i.year, i.hour, i.minute)
+    return str
 
+# 获取rpc mod字符串
+def get_rpc_file_mod_str(mod_name):
     # 模块名
-    str += """
+    str = """
 -module(%s_rpc).
 -author("hw").
 
@@ -56,8 +88,11 @@ def get_rpc_file(mod_name):
 %%%% API
 -export([handle/2]).
     """%(mod_name)
+    return str
 
-    # 函数结构
+# 获取rpc 协议函数字符串
+def get_rpc_file_protocol_fun_str(mod_name, protocol_key):
+    # 协议函数结构
     protocol_fun ="""
 %%%% %s
 handle(#%s{%s}, Player) ->
@@ -67,63 +102,27 @@ handle(#%s{%s}, Player) ->
         {false, Code} ->
             {reply, #%s{code = Code}}
     end;\n"""
-    protocol_list = mod.protocol_define.keys()
-    for protocol_key in protocol_list:
-        if protocol_key.find("_notify") > 0 or protocol_key.find("_reply") > 0:
-            continue
-        protocol_obj = mod.protocol_define[protocol_key]
-        # 函数参数
-        param_str = ""
-        param_str_1 = "Player, "
-        for tmp_param in protocol_obj["payload"]:
-            tmp_param_1 = get_param_name(tmp_param[0])
-            param_str += "%s = %s, "%(tmp_param[0], tmp_param_1)
-            param_str_1 += "%s, "%(tmp_param_1)
-        if len(param_str) > 0:
-            param_str = param_str[:-2]
-        param_str_1 = param_str_1[:-2]
+    # lib函数名
+    fun_name = get_fun_name(protocol_key)
+    protocol_obj = mod.protocol_define[protocol_key]
+    # 函数参数
+    param_str,param_str_1 = get_param_str(protocol_obj)
+    # 生成协议函数
+    tmp_protocol_fun = protocol_fun%(
+        protocol_obj["desc"]
+        , protocol_key
+        , param_str
+        , mod_name
+        , fun_name
+        , param_str_1
+        , protocol_key.replace("request", "reply")
+    )
+    return tmp_protocol_fun
 
-        # lib函数名
-        fun_name = get_fun_name(protocol_key)
-        tmp_protocol_fun = protocol_fun%(
-            protocol_obj["desc"]
-            , protocol_key
-            , param_str
-            , mod_name
-            , fun_name
-            , param_str_1
-            , protocol_key.replace("request", "reply")
-        )
-        str += tmp_protocol_fun
-
-    # 替换最后的;
-    str = str[: -2] + "."
-
-    # 写到文件
-    file_path = 'get_erl_dir/%s_rpc.erl'%(mod_name)
-    with open(file_path, 'w', encoding = "utf-8") as f:
-        f.write(str)
-
-
-# 获取lib文件
-def get_lib_file(mod_name):
-    # 时间
-    i = datetime.datetime.now()
-    str = ""
-    str += """
-%%%%%%-------------------------------------------------------------------
-%%%%%% @author hw
-%%%%%% @copyright (C) %s, <COMPANY>
-%%%%%% @doc
-%%%%%%
-%%%%%% @end
-%%%%%% Created : %s. %s月 %s %s:%s
-%%%%%%-------------------------------------------------------------------
-"""""
-    str = str%(i.year, i.day, i.month, i.year, i.hour, i.minute)
-
+# 获取lib mod字符串
+def get_lib_file_mod_str(mod_name):
     # 模块名
-    str += """
+    str = """
 -module(%s_lib).
 -author("hw").
 
@@ -133,7 +132,10 @@ def get_lib_file(mod_name):
 -include("task.hrl").
 -include("common.hrl").
 -include("erl_protocol_record.hrl").\n\n"""%(mod_name, mod_name)
+    return str
 
+# 获取lib api字符串
+def get_lib_file_api_str(request_list):
     # API
     api_str = """
 %%%% API
@@ -142,11 +144,11 @@ def get_lib_file(mod_name):
     on_first_login_event/2,
     on_login_event/2,
     on_zero_timer_event/2,
+
+
 """
-    protocol_list = mod.protocol_define.keys()
-    for protocol_key in protocol_list:
-        if protocol_key.find("_notify") > 0 or protocol_key.find("_reply") > 0:
-            continue
+    # 遍历协议
+    for protocol_key in request_list:
         protocol_obj = mod.protocol_define[protocol_key]
         fun_name = get_fun_name(protocol_key)
         param_num = len(protocol_obj["payload"])
@@ -155,7 +157,6 @@ def get_lib_file(mod_name):
     if len(protocol_key) > 0:
         api_str = api_str[:-2]
     api_str += "\n]).\n"
-    str += api_str
 
     # gm
     gm_str = """
@@ -163,10 +164,11 @@ def get_lib_file(mod_name):
 -export([
 ]).\n\n
 """
-    str += gm_str
+    api_str += gm_str
+    return api_str
 
-
-
+# 获取lib init字符串
+def get_lib_file_init_str():
     # 函数结构
     init_fun ="""
 %%%% 初始化模块
@@ -176,74 +178,280 @@ first_init() ->
 	event_dispatcher:add_event_listener(?EVENT_ZERO_TIMER, ?MODULE, on_zero_timer_event).
 
 %%%% 登录初始化
-on_first_login_event(Player, _Param) ->
+on_first_login_event(_Player, _Param) ->
 	ok.
 
 %%%% 登录事件
-on_login_event(Player, _Param) ->
+on_login_event(_Player, _Param) ->
 	ok.
 
 %%%% 零点事件
-on_zero_timer_event(Player, _Param) ->
+on_zero_timer_event(_Player, _Param) ->
 	ok.
 
 """
-    str += init_fun
+    return init_fun
 
-
+# 获取lib lib_fun字符串
+def get_lib_file_lib_fun_str(request_list):
+    str = "\n\n\n%%%% @doc 协议函数"
     lib_fun = """
 %%%% @doc %s
 %s(%s) ->
 	try check_%s(%s) of
-		{ok} ->
-			P1 = do_%s(%s),
-			{ok, P1, #%s{}}
+		ok ->
+			do_%s(%s)
 	catch throw : Code ->
 		{false, Code}
 	end.
-
     """
-    protocol_list = mod.protocol_define.keys()
-    for protocol_key in protocol_list:
-        if protocol_key.find("_notify") > 0 or protocol_key.find("_reply") > 0:
-            continue
+    for protocol_key in request_list:
         protocol_obj = mod.protocol_define[protocol_key]
         fun_name = get_fun_name(protocol_key)
         # 函数参数
-        param_str = "Player, "
-        for tmp_param in protocol_obj["payload"]:
-            tmp_param_1 = get_param_name(tmp_param[0])
-            param_str += "%s, "%(tmp_param_1)
-        param_str = param_str[:-2]
+        param_str,param_str_1 = get_param_str(protocol_obj)
 
         tmp_lib_fun = lib_fun%(
             protocol_obj["desc"]
             , fun_name
-            , param_str
+            , param_str_1
             , fun_name
-            , param_str
+            , param_str_1
             , fun_name
-            , param_str
-            , protocol_key.replace("request", "reply")
+            , param_str_1
+            # , protocol_key.replace("request", "reply")
         )
         str += tmp_lib_fun
+    return str
+
+# 获取lib 获取字符串
+def get_lib_file_get_str(mod_name):
+    str = """
+\n\n\n
+%%%% @doc 获取函数
+%%%% @doc 获取数据
+-spec lookup(PlayerId :: integer()) -> #player_%s{}.
+lookup(PlayerId) when is_integer(PlayerId) ->
+	case cache_unit:lookup(cache_player_%s, PlayerId) of
+		undefined ->
+			#player_%s{
+				player_id = PlayerId
+			};
+		%s -> %s
+	end;
+lookup(Player) ->
+	lookup(player_lib:player_id(Player)).
+
+%%%% @doc 保存数据
+save_info(%s) ->
+	cache_unit:insert(cache_player_%s, %s).
+    """
+    # 首字母大写
+    mod_name_1 = mod_name[:1].upper() + mod_name[1:]
+    str = str%(
+        mod_name
+        , mod_name
+        , mod_name
+        , mod_name_1
+        , mod_name_1
+        , mod_name_1
+        , mod_name
+        , mod_name_1
+    )
+    return str
+
+# 获取lib check字符串
+def get_lib_file_check_str(request_list):
+    str = "\n\n\n%%%% @doc 检查函数"
+    check_fun = """
+%%%% @doc 检查%s
+check_%s(%s) ->
+	ok.
+    """
+    for protocol_key in request_list:
+        protocol_obj = mod.protocol_define[protocol_key]
+        fun_name = get_fun_name(protocol_key)
+        # 函数参数
+        param_str,param_str_1 = get_param_str(protocol_obj)
+
+        tmp_check_fun = check_fun%(
+            protocol_obj["desc"][2:]
+            , fun_name
+            , param_str_1
+            # , protocol_key.replace("request", "reply")
+        )
+        str += tmp_check_fun
+    return str
+
+# 获取lib do字符串
+def get_lib_file_do_str(request_list):
+    str = "\n\n\n%%%% @doc 修改函数"
+    do_fun = """
+%%%% @doc %s
+do_%s(%s) ->
+	{ok, #%s{}, P2}.
+    """
+    for protocol_key in request_list:
+        protocol_obj = mod.protocol_define[protocol_key]
+        fun_name = get_fun_name(protocol_key)
+        # 函数参数
+        param_str,param_str_1 = get_param_str(protocol_obj)
+
+        tmp_do_fun = do_fun%(
+            protocol_obj["desc"][2:]
+            , fun_name
+            , param_str_1
+            , protocol_key.replace("request", "reply")
+        )
+        str += tmp_do_fun
+    return str
+
+# 获取宏定义字符串
+def get_def_str(mod_name):
+    str = """
+
+-ifndef(%s_H_H_).
+-define(%s_H_H_, 1).
+
+    """
+    mod_name_1 = mod_name.upper()
+    str = str%(mod_name_1, mod_name_1)
+    return str 
+
+# 玩法数据结构
+def get_record_str():
+    # 遍历协议
+    str = ""
+    for record_obj in mod.record_define:
+        str += get_record_str_1(record_obj)
+    return str 
+# 获取record字段
+def get_record_param(record_param_list):
+    str = ""
+    param_len = len(record_param_list)
+    param_idx = 0
+    # 遍历字段
+    for tmp_param in record_param_list:
+        # 参数
+        param_idx += 1
+        # 跳过code
+        if tmp_param[0] == "code":
+            continue
+        param_str = ""
+        if tmp_param[1] == "int":
+            param_str = "\t%s = 0"%(tmp_param[0])
+        else:
+            param_str = "\t%s = []"%(tmp_param[0])
+        param_str_len = len(param_str)
+        # 加，
+        if param_idx != param_len:
+            param_str += ","
+        # 对齐的\t
+        if _g_record_len > param_str_len:
+            t_num = int((_g_record_len - param_str_len)/4)
+            param_str += "\t"*t_num
+        # 注释
+        param_str += "%%%% %s\n"%(tmp_param[2])
+        str += param_str
+    return str
+# 玩法数据结构
+def get_record_str_1(record_obj):
+    str = """
+%%%% 
+-record(%s, {\n"""%(record_obj[0][:-2])
+    str += get_record_param(record_obj[1])
+    str += "}).\n"
+    return str 
+
+# 玩家数据结构
+def get_player_record_str(mod_name):
+    str = """
+%%%% 
+-record(player_%s, {\n"""%(mod_name)
+    reply_name = mod_name + "_info_reply"
+    reply_obj = mod.protocol_define[reply_name]
+    str += get_record_param(reply_obj["payload"])
+    str += "}).\n"
+    return str 
+
+
+
+
+
+
+# 获取rpc文件
+def get_rpc_file(mod_name):
+    # 文件开头
+    str = get_file_head_str()
+    # mod字符串
+    str += get_rpc_file_mod_str(mod_name)
+
+    # 遍历协议
+    request_list = get_request_key()
+    for protocol_key in request_list:
+        # 协议函数
+        protocol_fun = get_rpc_file_protocol_fun_str(mod_name, protocol_key)
+        str += protocol_fun
+    # 替换最后的;
+    str = str[: -2] + "."
+
+    # 写到文件
+    file_path = 'get_erl_dir/%s_rpc.erl'%(mod_name)
+    with open(file_path, 'w', encoding = "utf-8") as f:
+        f.write(str)
+
+# 获取lib文件
+def get_lib_file(mod_name):
+    # 文件开头
+    str = get_file_head_str()
+    # mod字符串
+    str += get_lib_file_mod_str(mod_name)
+    # API字符串
+    request_list = get_request_key()
+    str += get_lib_file_api_str(request_list)
+    # init字符串
+    str += get_lib_file_init_str()
+    # lib_fun字符串
+    str += get_lib_file_lib_fun_str(request_list)
+    # 获取函数
+    str += get_lib_file_get_str(mod_name)
+    # 检查函数
+    str += get_lib_file_check_str(request_list)
+    # 修改函数
+    str += get_lib_file_do_str(request_list)
 
     # 写到文件
     file_path = 'get_erl_dir/%s_lib.erl'%(mod_name)
     with open(file_path, 'w', encoding = "utf-8") as f:
         f.write(str)
 
+# 获取hrl文件
+def get_hrl_file(mod_name):
+    # 文件开头
+    str = get_file_head_str()
+    # 宏定义文件
+    str += get_def_str(mod_name)
+    # 玩法数据结构
+    str += get_record_str()
+    # 玩家数据结构
+    str += get_player_record_str(mod_name)
+    str += "\n-endif.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
-
-
+    # 写到文件
+    file_path = 'get_erl_dir/%s.hrl'%(mod_name)
+    with open(file_path, 'w', encoding = "utf-8") as f:
+        f.write(str)
 
 
 def main():
-    mod_name = "guild"
     # 生成rpc文件
-    get_rpc_file(mod_name)
+    get_rpc_file(_g_mod_name)
     # 生成lib文件
-    get_lib_file(mod_name)
+    get_lib_file(_g_mod_name)
+    # 生成hrl文件
+    get_hrl_file(_g_mod_name)
+    # # 生成server文件
+    # get_server_file(_g_mod_name)
     
 main()
 
