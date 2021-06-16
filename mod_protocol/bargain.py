@@ -1,16 +1,7 @@
-from src.counter import single_counter
-from src.counter import error_code
 
-error_code.allocate_count(10)
-
-single_counter.allocate_count(16)
 
 header = []
 
-const_define = [
-    ('bargain_cmd_min', single_counter.begin_count()),
-    ('bargain_cmd_max', single_counter.end_count()),
-]
 
 error_msg = [
 ]
@@ -26,7 +17,6 @@ record_define = [
 
 protocol_define = {
     "bargain_gift_notify": {
-        "cmd": single_counter.next(),
         "desc": "礼包变化推送",
         "payload": [
             ("code", "int"),
@@ -35,14 +25,12 @@ protocol_define = {
     },
 
     "bargain_info_request": {
-        "cmd": single_counter.next(),
         "desc": "请求砍价礼包信息",
         "payload": [
         ],
     },
 
     "bargain_info_reply": {
-        "cmd": single_counter.next(),
         "desc": "砍价礼包信息返回",
         "payload": [
             ("code", "int"),
@@ -52,8 +40,7 @@ protocol_define = {
         ],
     },
 
-     "bargain_help_request": {
-        "cmd": single_counter.next(),
+    "bargain_help_request": {
         "desc": "请求帮助砍价",
         "payload": [
             ("friend_id", "int", "好友id"),
@@ -62,7 +49,40 @@ protocol_define = {
     },
 
     "bargain_help_reply": {
-        "cmd": single_counter.next(),
+        "desc": "帮助砍价返回",
+        "payload": [
+            ("code", "int"),
+            ("help_conut", "int", "已帮助砍价次数"),
+            ('help_list', 'simple_list', "已帮助好友 [[玩家id, 礼包id]]"),
+        ],
+    },
+    
+    "bargain_help_a_request": {
+        "desc": "请求帮助砍价",
+        "payload": [
+            ("friend_id", "int", "好友id"),
+            ("gift_id", "int", "礼包id"),
+        ],
+    },
+
+    "bargain_help_a_reply": {
+        "desc": "帮助砍价返回",
+        "payload": [
+            ("code", "int"),
+            ("help_conut", "int", "已帮助砍价次数"),
+            ('help_list', 'simple_list', "已帮助好友 [[玩家id, 礼包id]]"),
+        ],
+    },
+    
+    "bargain_help_b_request": {
+        "desc": "请求帮助砍价",
+        "payload": [
+            ("friend_id", "int", "好友id"),
+            ("gift_id", "int", "礼包id"),
+        ],
+    },
+
+    "bargain_help_b_reply": {
         "desc": "帮助砍价返回",
         "payload": [
             ("code", "int"),

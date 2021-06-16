@@ -3,6 +3,11 @@
 # 根据协议生成erl文件
 import datetime
 
+## 加一层rpc匹配容错
+# 容错匹配
+# handle(Msg, _Player) ->
+# 	?ERROR("module:[~p] handle msg error:[~p]", [?MODULE, Msg]),
+# 	ok.
 
 
 import mod_protocol.bargain as mod
@@ -27,9 +32,9 @@ def get_request_key():
     protocol_list = mod.protocol_define.keys()
     key_list = []
     for protocol_key in protocol_list:
-        if protocol_key.find("_notify") > 0 or protocol_key.find("_reply") > 0:
-            continue
-        key_list.append(protocol_key)
+        # 只提取请求
+        if protocol_key.find("_request") > 0:
+            key_list.append(protocol_key)
     return key_list
 
 # 获取协议参数 首字母 下划线后一个替换大写

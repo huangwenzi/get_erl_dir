@@ -1,66 +1,5 @@
 # 部族系统
 
-from src.counter import single_counter
-from src.counter import error_code
-
-error_code.allocate_count(80)
-
-single_counter.allocate_count(128)
-
-header = []
-
-const_define = [
-    ("guild_cmd_min", single_counter.begin_count()),
-    ("guild_cmd_max", single_counter.end_count()),
-]
-
-error_msg = [
-    ('error_guild_not_exists', error_code.next(), "该氏族不存在"),
-    ('error_guild_player_is_in', error_code.next(), "玩家已在氏族中"),
-    ('error_guild_name_to_long', error_code.next(), "氏族名字过长"),
-    ('error_guild_notice_to_long', error_code.next(), "氏族公告过长"),
-    ('error_guild_name_exists', error_code.next(), "氏族名字已存在"),
-    ('error_guild_cd', error_code.next(), "氏族时间冷却中"),
-    ('error_guild_max_apply', error_code.next(), "已达到最大申请数"),
-    ('error_guild_no_player', error_code.next(), "当前不在氏族中"),
-    ('error_guild_no_permission', error_code.next(), "权限不足"),
-    ('error_guild_apply_lose_effect', error_code.next(), "申请已失效"),
-    ('error_guild_to_no_player', error_code.next(), "该玩家已不在氏族中了"),
-    ('error_guild_patriarch_cant_quit', error_code.next(), "族长不能退出氏族"),
-    ('error_guild_donate_already', error_code.next(), "今日已祭祀"),
-    ('error_guild_donate_receive_already', error_code.next(), "奖励已领取"),
-    ('error_guild_donate_progress_not_enough', error_code.next(), "祭祀进度不够，无法领取奖励"),
-    ('error_guild_skill_full', error_code.next(), "技能等级已经达到了满级"),
-    ('error_guild_apply_expired', error_code.next(), "申请已过期"),
-    ('error_guild_apply_exists', error_code.next(), "已申请过该氏族"),
-    ('error_guild_warehouse_cant_sell', error_code.next(), "该物品无法存入仓库"),
-    ('error_guild_warehouse_sell_full', error_code.next(), "该物品今日存入数量已满"),
-    ('error_guild_warehouse_not_item', error_code.next(), "该物品库存已空"),
-    ('error_guild_warehouse_integral_not_exists', error_code.next(), "积分不足"),
-    ('error_guild_warehouse_buy_full', error_code.next(), "该物品今日兑换数量已满"),
-    ('error_guild_position_full', error_code.next(), "该职位的人数已满"),
-    ('error_guild_member_full', error_code.next(), "氏族人数已满"),
-    ('error_guild_hunting_boss_escape', error_code.next(), "BOSS已逃走"),
-    ('error_guild_hunting_inspire_max', error_code.next(), "已经达到了最大鼓舞次数"),
-    ('error_guild_hunting_challenge_cd', error_code.next(), "正在挑战CD中"),
-    ('error_guild_hunting_challenge_max', error_code.next(), "已达到本次最大挑战次数"),
-    ('error_guild_hunting_not_blocking_time', error_code.next(), "不在阻击阶段"),
-    ('error_guild_hunting_blocking_to_player_not_guild', error_code.next(), "被阻击的玩家不在氏族中"),
-    ('error_guild_hunting_blocking_same_guild', error_code.next(), "被阻击的玩家是本氏族的玩家"),
-    ('error_guild_hunting_blocking_cd', error_code.next(), "正在阻击CD中"),
-    ('error_guild_hunting_blocking_max', error_code.next(), "已达到本次最大阻击次数"),
-    ('error_guild_hunting_blocking_not_integral', error_code.next(), "被阻击的玩家积分不足"),
-    ('error_guild_warehouse_box_full', error_code.next(), "仓库格子已满"),
-    ('error_guild_warehouse_item_not_enough', error_code.next(), "该物品库存不足"),
-    ('error_guild_level_not_enough', error_code.next(), "氏族等级不足"),
-    ('error_guild_skill_other_too_small', error_code.next(), "其他类型的技能等级太低"),
-    ('error_guild_donate_undone', error_code.next(), "请先完成祭祀"),
-    ('error_guild_warehouse_beast_level', error_code.next(), "异兽等级必须为1级"),
-    ('error_guild_warehouse_beast_star', error_code.next(), "异兽星级不满足配置要求"),
-    ('error_guild_warehouse_beast_sell_full', error_code.next(), "每日存入异兽的数量达到上限"),
-    ('error_guild_warehouse_beast_buy_full', error_code.next(), "每日兑换异兽的数量达到上限"),
-]
-
 record_define = [
     # 加入部族的条件
     ("guild_join_condition_p", [
@@ -240,14 +179,14 @@ record_define = [
 
 protocol_define = {
     "guild_player_info_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求玩家的部族数据",
         "reply": "guild_player_info_reply",
         "payload": [
         ],
     },
     "guild_player_info_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回玩家的部族数据",
         "payload": [
             ("guild_id", "int", "所在部族的id，未加入部族则是0"),
@@ -257,14 +196,14 @@ protocol_define = {
     },
     
     "guild_list_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族列表",
         "reply": "guild_list_reply",
         "payload": [
         ],
     },
     "guild_list_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族列表",
         "payload": [
             ("guild_list", "array of guild_list_p", "部族列表"),
@@ -272,7 +211,7 @@ protocol_define = {
     },
 
     "guild_view_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "查看部族信息（公共）",
         "reply": "guild_view_reply",
         "payload": [
@@ -280,7 +219,7 @@ protocol_define = {
         ],
     },
     "guild_view_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族信息（公共）",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -289,7 +228,7 @@ protocol_define = {
     },
 
     "guild_create_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "创建部族",
         "reply": "guild_create_reply",
         "payload": [
@@ -299,7 +238,7 @@ protocol_define = {
         ],
     },
     "guild_create_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "创建部族返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -308,7 +247,7 @@ protocol_define = {
     },
 
     "guild_apply_join_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "申请加入部族",
         "reply": "guild_apply_join_reply",
         "payload": [
@@ -316,7 +255,7 @@ protocol_define = {
         ],
     },
     "guild_apply_join_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "申请加入部族返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -324,21 +263,21 @@ protocol_define = {
     },
 
     "guild_apply_join_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "玩家申请加入部族通知 只发给有审核资格的部族成员",
         "payload": [
         ],
     },
 
     "guild_info_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求玩家所在的部族信息",
         "reply": "guild_info_reply",
         "payload": [
         ],
     },
     "guild_info_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族信息",
         "payload": [
             ("guild_info", "guild_info_p", "部族信息"),
@@ -346,14 +285,14 @@ protocol_define = {
     },
 
     "guild_member_list_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族成员列表",
         "reply": "guild_member_list_reply",
         "payload": [
         ],
     },
     "guild_member_list_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族成员列表",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -362,14 +301,14 @@ protocol_define = {
     },
 
     "guild_apply_join_list_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族申请列表",
         "reply": "guild_apply_join_list_reply",
         "payload": [
         ],
     },
     "guild_apply_join_list_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族申请列表",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -380,7 +319,7 @@ protocol_define = {
     },
 
     "guild_approve_join_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "审批申请加入部族的玩家",
         "reply": "guild_approve_join_list_reply",
         "payload": [
@@ -389,7 +328,7 @@ protocol_define = {
         ],
     },
     "guild_approve_join_list_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回审批结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -398,7 +337,7 @@ protocol_define = {
     },
 
     "guild_join_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "加入部族通知",
         "payload": [
              ("is_auto_join", "int", "是否是由自动同意加入的部族 0否 1是"),
@@ -407,14 +346,14 @@ protocol_define = {
     },
 
     "guild_set_auto_apply_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "设置自动审批",
         "reply": "guild_set_auto_apply_reply",
         "payload": [
         ],
     },
     "guild_set_auto_apply_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回自动审批结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -423,7 +362,7 @@ protocol_define = {
     },
 
     "guild_set_join_cond_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "设置加入条件",
         "reply": "guild_set_join_cond_reply",
         "payload": [
@@ -432,7 +371,7 @@ protocol_define = {
         ],
     },
     "guild_set_join_cond_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回加入条件",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -441,7 +380,7 @@ protocol_define = {
     },
 
     "guild_modify_name_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "修改部族名字",
         "reply": "guild_modify_name_reply",
         "payload": [
@@ -449,7 +388,7 @@ protocol_define = {
         ],
     },
     "guild_modify_name_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回修改结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -458,7 +397,7 @@ protocol_define = {
     },
 
     "guild_modify_icon_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "修改部族旗帜",
         "reply": "guild_modify_icon_reply",
         "payload": [
@@ -466,7 +405,7 @@ protocol_define = {
         ],
     },
     "guild_modify_icon_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回修改结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -475,7 +414,7 @@ protocol_define = {
     },
 
     "guild_modify_notice_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "修改部族公告",
         "reply": "guild_modify_notice_reply",
         "payload": [
@@ -483,7 +422,7 @@ protocol_define = {
         ],
     },
     "guild_modify_notice_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回修改结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -492,7 +431,7 @@ protocol_define = {
     },
 
     "guild_appoint_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "任命职位",
         "reply": "guild_appoint_reply",
         "payload": [
@@ -501,7 +440,7 @@ protocol_define = {
         ],
     },
     "guild_appoint_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "任命职位结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -510,7 +449,7 @@ protocol_define = {
     },
 
     "guild_kick_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "踢人",
         "reply": "guild_kick_reply",
         "payload": [
@@ -518,7 +457,7 @@ protocol_define = {
         ],
     },
     "guild_kick_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "踢人结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -527,14 +466,14 @@ protocol_define = {
     },
 
     "guild_kicked_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "被踢通知",
         "payload": [
         ],
     },
 
     "guild_transfer_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "族长转让",
         "reply": "guild_transfer_reply",
         "payload": [
@@ -542,7 +481,7 @@ protocol_define = {
         ],
     },
     "guild_transfer_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "族长转让结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -551,14 +490,14 @@ protocol_define = {
     },
 
     "guild_disband_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族解散",
         "reply": "guild_disband_reply",
         "payload": [
         ],
     },
     "guild_disband_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族解散结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -566,21 +505,21 @@ protocol_define = {
     },
 
     "guild_disband_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "部族解散通知",
         "payload": [
         ],
     },
 
     "guild_quit_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "退出部族",
         "reply": "guild_quit_reply",
         "payload": [
         ],
     },
     "guild_quit_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "退出部族结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -589,14 +528,14 @@ protocol_define = {
 
     #部族祭祀
     "guild_donate_info_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "祭祀信息",
         "reply": "guild_donate_info_reply",
         "payload": [
         ],
     },
     "guild_donate_info_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回祭祀信息",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -610,7 +549,7 @@ protocol_define = {
     },
 
     "guild_donate_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "进行祭祀",
         "reply": "guild_donate_reply",
         "payload": [
@@ -618,7 +557,7 @@ protocol_define = {
         ],
     },
     "guild_donate_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "祭祀结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -630,7 +569,7 @@ protocol_define = {
     },
 
     "guild_donate_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "玩家祭祀通知",
         "payload": [
             ("progress", "int", "祭祀进度"),
@@ -638,7 +577,7 @@ protocol_define = {
     },
 
     "guild_donate_receive_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求领取祭祀进度奖励",
         "reply": "guild_donate_receive_reply",
         "payload": [
@@ -646,7 +585,7 @@ protocol_define = {
         ],
     },
     "guild_donate_receive_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "领取祭祀进度奖励结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -656,14 +595,14 @@ protocol_define = {
 
     #部族技能
     "guild_skill_info_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族技能信息",
         "reply": "guild_skill_info_reply",
         "payload": [
         ],
     },
     "guild_skill_info_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族技能信息",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -672,7 +611,7 @@ protocol_define = {
     },
 
     "guild_skill_lv_up_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族技能升级",
         "reply": "guild_skill_lv_up_reply",
         "payload": [
@@ -680,7 +619,7 @@ protocol_define = {
         ],
     },
     "guild_skill_lv_up_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族技能升级返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -691,14 +630,14 @@ protocol_define = {
 
     #部族仓库
     "guild_warehouse_info_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族仓库信息",
         "reply": "guild_warehouse_info_reply",
         "payload": [
         ],
     },
     "guild_warehouse_info_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族仓库信息",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -707,7 +646,7 @@ protocol_define = {
     },
 
     "guild_warehouse_sell_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库存物品",
         "reply": "guild_warehouse_sell_reply",
         "payload": [
@@ -717,7 +656,7 @@ protocol_define = {
         ],
     },
     "guild_warehouse_sell_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库存物品返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -725,7 +664,7 @@ protocol_define = {
     },
 
     "guild_warehouse_buy_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库兑换物品",
         "reply": "guild_warehouse_buy_reply",
         "payload": [
@@ -735,7 +674,7 @@ protocol_define = {
         ],
     },
     "guild_warehouse_buy_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库兑换物品返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -743,14 +682,14 @@ protocol_define = {
     },
 
     "guild_warehouse_update_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库更新通知 玩家存取道具 活动奖励发放时广播",
         "payload": [
         ],
     },
 
     "guild_warehouse_clear_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库清理物品",
         "reply": "guild_warehouse_clear_reply",
         "payload": [
@@ -759,7 +698,7 @@ protocol_define = {
         ],
     },
     "guild_warehouse_clear_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族仓库兑换物品返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -769,14 +708,14 @@ protocol_define = {
 
     #部族狩猎
     "guild_hunting_info_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎的信息",
         "reply": "guild_hunting_info_reply",
         "payload": [
         ],
     },
     "guild_hunting_info_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎的信息",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -786,14 +725,14 @@ protocol_define = {
     },
 
     "guild_hunting_inspire_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎鼓舞",
         "reply": "guild_hunting_inspire_reply",
         "payload": [
         ],
     },
     "guild_hunting_inspire_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎的鼓舞结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -802,7 +741,7 @@ protocol_define = {
     },
 
     "guild_hunting_challenge_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎挑战",
         "reply": "guild_hunting_challenge_reply",
         "payload": [
@@ -811,7 +750,7 @@ protocol_define = {
         ],
     },
     "guild_hunting_challenge_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎的挑战结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -819,14 +758,14 @@ protocol_define = {
     },
 
     "guild_hunting_blocking_list_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎阻击列表",
         "reply": "guild_hunting_blocking_list_reply",
         "payload": [
         ],
     },
     "guild_hunting_blocking_list_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎的阻击列表",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -835,7 +774,7 @@ protocol_define = {
     },
 
     "guild_hunting_blocking_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎阻击",
         "reply": "guild_hunting_blocking_reply",
         "payload": [
@@ -845,7 +784,7 @@ protocol_define = {
         ],
     },
     "guild_hunting_blocking_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎的阻击结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -853,7 +792,7 @@ protocol_define = {
     },
 
     "guild_hunting_challenge_reward_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "领取部族狩猎挑战奖励返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -867,7 +806,7 @@ protocol_define = {
     },
 
     "guild_hunting_blocking_reward_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "领取部族狩猎阻击奖励返回",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -884,14 +823,14 @@ protocol_define = {
     },
 
     "guild_hunting_blocking_rec_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎阻击记录",
         "reply": "guild_hunting_blocking_rec_reply",
         "payload": [
         ],
     },
     "guild_hunting_blocking_rec_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎阻击记录",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -900,7 +839,7 @@ protocol_define = {
     },
 
     "guild_hunting_blocking_lineup_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎阻击阵容",
         "reply": "guild_hunting_blocking_lineup_reply",
         "payload": [
@@ -908,7 +847,7 @@ protocol_define = {
         ],
     },
     "guild_hunting_blocking_lineup_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎阻击阵容",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -918,14 +857,14 @@ protocol_define = {
     },
 
     "guild_hunting_log_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎日志",
         "reply": "guild_hunting_log_reply",
         "payload": [
         ],
     },
     "guild_hunting_log_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎日志",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -934,21 +873,21 @@ protocol_define = {
     },
 
     "guild_hunting_be_blocking_notify":{
-        "cmd": single_counter.next(),
+         
         "desc": "部族狩猎 被阻击的玩家的通知",
         "payload": [
         ],
     },
 
     "guild_hunting_rank_inside_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "请求部族狩猎族内排行信息",
         "reply": "guild_hunting_rank_inside_reply",
         "payload": [
         ],
     },
     "guild_hunting_rank_inside_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回部族狩猎族内排行信息",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
@@ -958,14 +897,14 @@ protocol_define = {
     },
 
     "guild_hunting_receive_request": {
-        "cmd": single_counter.next(),
+         
         "desc": "部族狩猎领取奖励",
         "reply": "guild_hunting_receive_reply",
         "payload": [
         ],
     },
     "guild_hunting_receive_reply": {
-        "cmd": single_counter.next(),
+         
         "desc": "返回领取结果",
         "payload": [
             ("code", "int", "0 表示成功， 其他表示错误码"),
