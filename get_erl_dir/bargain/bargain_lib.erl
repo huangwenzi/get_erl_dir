@@ -5,7 +5,7 @@
 %%%%%% @doc
 %%%%%%
 %%%%%% @end
-%%%%%% Created : 16. 6月 2021 20:44
+%%%%%% Created : 17. 6月 2021 14:30
 %%%%%%-------------------------------------------------------------------
 
 -module(bargain_lib).
@@ -31,6 +31,7 @@
 	help/3,
 	help_a/3,
 	help_b/3
+
 ]).
 
 %% gm
@@ -79,6 +80,10 @@ help(FriendId, GiftId) ->
 		{false, Code}
 	end.
     
+
+
+
+
 %% @doc 请求帮助砍价
 help_a(FriendId, GiftId) ->
 	try check_help_a(FriendId, GiftId) of
@@ -88,6 +93,7 @@ help_a(FriendId, GiftId) ->
 		{false, Code}
 	end.
     
+
 %% @doc 请求帮助砍价
 help_b(FriendId, GiftId) ->
 	try check_help_b(FriendId, GiftId) of
@@ -97,9 +103,6 @@ help_b(FriendId, GiftId) ->
 		{false, Code}
 	end.
     
-
-
-
 
 %% @doc 获取函数
 %% @doc 获取数据
@@ -132,6 +135,18 @@ to_bargain_gift_p([BargainGift | T], List) ->
     
 
 
+%% @doc 
+to_bargain_gift_a_p(#bargain_gift_a{id = Id, help_list = HelpList, buy_count = BuyCount}) ->
+	#bargain_gift_a_p{
+		id = Id
+		, help_list = HelpList
+		, buy_count = BuyCount
+	}.
+to_bargain_gift_a_p([], List) -> List;
+to_bargain_gift_a_p([BargainGiftA | T], List) ->
+	to_bargain_gift_a_p(T, [to_bargain_gift_a_p(BargainGiftA) | List]).
+    
+
 %% @doc 检查函数
 %% @doc 检查砍价礼包信息
 check_info() ->
@@ -141,15 +156,17 @@ check_info() ->
 check_help(FriendId, GiftId) ->
 	ok.
     
+
+
 %% @doc 检查帮助砍价
 check_help_a(FriendId, GiftId) ->
 	ok.
     
+
 %% @doc 检查帮助砍价
 check_help_b(FriendId, GiftId) ->
 	ok.
     
-
 
 %% @doc 修改函数
 %% @doc 砍价礼包信息
@@ -159,12 +176,14 @@ do_info() ->
 %% @doc 帮助砍价
 do_help(FriendId, GiftId) ->
 	{ok, #bargain_help_reply{}}.
-    
+   
 %% @doc 帮助砍价
 do_help_a(FriendId, GiftId) ->
 	{ok, #bargain_help_a_reply{}}.
     
+
 %% @doc 帮助砍价
 do_help_b(FriendId, GiftId) ->
 	{ok, #bargain_help_b_reply{}}.
     
+ 

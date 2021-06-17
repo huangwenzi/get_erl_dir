@@ -77,3 +77,20 @@ def get_erl_val_name(name):
         tmp_1 = tmp_1.upper()
         name = name[:idx] + tmp_1 + name[idx+2:]
 
+# 上一个protocol_key
+def get_last_protocol_key(pro_mod, protocol_key):
+    last_protocol_key = ""
+    for tmp_protocol_key in pro_mod.request_key:
+        if tmp_protocol_key == protocol_key:
+            break
+        last_protocol_key = tmp_protocol_key
+    return last_protocol_key
+
+# 上一个record_p
+def get_last_record_key(pro_mod, record_key):
+    last_record_key = ""
+    for record_obj in pro_mod.mod.record_define:
+        if record_obj[0] == record_key:
+            break
+        last_record_key = record_obj[0]
+    return last_record_key

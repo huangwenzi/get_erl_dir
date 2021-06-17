@@ -13,6 +13,13 @@ record_define = [
         ('help_list', 'simple_list', "已砍价玩家, [[玩家id, 砍价金额]]"),
         ('buy_count', 'int', "已购买次数"),
     ], True),
+    
+    ## 礼包数据
+    ('bargain_gift_a_p', [
+        ('id', 'int', "礼包id"),
+        ('help_list', 'simple_list', "已砍价玩家, [[玩家id, 砍价金额]]"),
+        ('buy_count', 'int', "已购买次数"),
+    ], True),
 ]
 
 protocol_define = {

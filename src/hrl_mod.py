@@ -21,13 +21,8 @@ def create_hrl_file(pro_mod):
         with open(file_name, 'r', encoding = "utf-8") as f:
             str = f.read()
         # 遍历协议
-        for tmp_key in pro_mod.request_key:
-            protocol_obj = pro_mod.protocol_map[tmp_key]
-            # 替换已存在的函数参数
-            str,ret = replace_hrl_fun_param(str, pro_mod, protocol_obj)
-            # 添加不存在的函数
-            if not ret:
-                str = add_hrl_fun_param(str, pro_mod, protocol_obj)
+        for record_obj in pro_mod.mod.record_define:
+            str = add_hrl_record(str, pro_mod, record_obj)
     else:
         # 不存在文件
         # 创建新的hrl文件
@@ -43,11 +38,11 @@ def create_hrl_file_1(pro_mod):
     # 文件开头
     str = HelpMod.get_file_head_str()
     # 宏定义文件
-    str += get_def_str()
+    str += get_def_str(pro_mod)
     # 玩法数据结构
-    str += get_record_str()
+    str += get_record_str(pro_mod)
     # 玩家数据结构
-    str += get_player_record_str()
+    str += get_player_record_str(pro_mod)
     str += "\n-endif.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     return str
 
@@ -102,8 +97,8 @@ def get_record_param(record_param_list):
         if param_idx != param_len:
             param_str += ","
         # 对齐的\t
-        if _g_record_len > param_str_len:
-            t_num = int((_g_record_len - param_str_len)/4)
+        if CfgMod.g_record_len > param_str_len:
+            t_num = int((CfgMod.g_record_len - param_str_len)/4)
             param_str += "\t"*t_num
         # 注释
         param_str += "%%%% %s\n"%(tmp_param[2])
@@ -111,16 +106,45 @@ def get_record_param(record_param_list):
     return str
 
 # 玩家数据结构
-def get_player_record_str():
+def get_player_record_str(pro_mod):
     # 协议是否存在
-    reply_name = _g_mod_name + "_info_reply"
-    if reply_name not in mod.protocol_define:
+    reply_name = pro_mod.mod_name + "_info_reply"
+    if reply_name not in pro_mod.mod.protocol_define:
         return ""
     
     str = """
 %%%% 
--record(player_%s, {\n"""%(_g_mod_name)
-    reply_obj = mod.protocol_define[reply_name]
+-record(player_%s, {\n"""%(pro_mod.mod_name)
+    reply_obj = pro_mod.mod.protocol_define[reply_name]
     str += "\tplayer_id = 0, \n" + get_record_param(reply_obj["payload"])
     str += "}).\n"
+    return str
+
+# 添加新record
+def add_hrl_record(str, pro_mod, record_obj):
+    # 是否已经存在
+    find_str = "-record(%s"%((record_obj[0][:-2]))
+    if str.find(find_str) >= 0:
+        return str
+    
+    # 上一个函数所在位置
+    last_record_name = HelpMod.get_last_record_key(pro_mod, record_obj[0])[:-2]
+    find_str = "-record(%s"%(last_record_name)
+    last_fun_name_pos = str.find(find_str)
+    end_fun_pos = 0
+    # 是否存在上一个的位置
+    if last_fun_name_pos == -1:
+        # 获取"-endif."的位置
+        last_fun_name_pos = str.find("-endif.")
+        end_fun_pos = last_fun_name_pos - 2
+    else:
+        # 上个函数下方函数的位置
+        end_fun_pos = str.find("\n%%", last_fun_name_pos)
+        if end_fun_pos == -1:
+            # 获取"-endif."的位置
+            last_fun_name_pos = str.find("-endif.")
+            end_fun_pos = last_fun_name_pos - 2
+        
+    record_p_str = get_record_str_1(record_obj)
+    str = str[:end_fun_pos] + record_p_str + "\n" +  str[end_fun_pos:]
     return str
