@@ -1,5 +1,4 @@
 import os
-import re
 
 
 import src.help_mod as HelpMod
@@ -13,7 +12,7 @@ import src.cfg as CfgMod
 # 生成hrl文件
 def create_hrl_file(pro_mod):
     # hrl文件名
-    file_name = "{0}/{1}_hrl.erl".format(pro_mod.dir_path, pro_mod.mod_name)
+    file_name = "{0}/{1}_hrl.erl".format(CfgMod.out_hrl_path, pro_mod.mod_name)
     str = ""
     # 文件是否存在
     if os.path.exists(file_name):
@@ -124,20 +123,25 @@ def get_player_record_str(pro_mod):
 def add_hrl_record(str, pro_mod, record_obj):
     # 是否已经存在
     find_str = "-record(%s"%((record_obj[0][:-2]))
-    if str.find(find_str) >= 0:
+    if str.find(find_str) != -1:
         return str
     
-    # 上一个函数所在位置
-    last_record_name = HelpMod.get_last_record_key(pro_mod, record_obj[0])[:-2]
-    find_str = "-record(%s"%(last_record_name)
-    last_fun_name_pos = str.find(find_str)
+    # 在最后面加
+    last_fun_name_pos = str.find("-endif.")
+    end_fun_pos = last_fun_name_pos - 2
+    
     end_fun_pos = 0
-    # 是否存在上一个的位置
-    if last_fun_name_pos == -1:
+    # 上一个函数所在位置
+    last_record_name = HelpMod.get_last_record_key(pro_mod, record_obj[0])
+    if last_record_name == "":
+        # 没有上一个
         # 获取"-endif."的位置
         last_fun_name_pos = str.find("-endif.")
         end_fun_pos = last_fun_name_pos - 2
     else:
+        last_record_name = last_record_name[:-2]
+        find_str = "-record(%s"%(last_record_name)
+        last_fun_name_pos = str.find(find_str)
         # 上个函数下方函数的位置
         end_fun_pos = str.find("\n%%", last_fun_name_pos)
         if end_fun_pos == -1:

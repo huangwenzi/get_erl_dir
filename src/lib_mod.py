@@ -193,11 +193,9 @@ lookup(Player) ->
 save_info({1}) ->
 	cache_unit:insert(cache_player_{0}, {1}).
     """
-    # 首字母大写
     str = str.format(
         pro_mod.mod_name
         , HelpMod.get_erl_val_name(pro_mod.mod_name)
-
     )
     return str
 
