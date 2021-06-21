@@ -12,7 +12,7 @@ import src.cfg as CfgMod
 # 生成hrl文件
 def create_hrl_file(pro_mod):
     # hrl文件名
-    file_name = "{0}/{1}_hrl.erl".format(CfgMod.out_hrl_path, pro_mod.mod_name)
+    file_name = "{0}/{1}.hrl".format(CfgMod.out_hrl_path, pro_mod.mod_name)
     str = ""
     # 文件是否存在
     if os.path.exists(file_name):

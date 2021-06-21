@@ -44,7 +44,7 @@ def get_rpc_record_param(protocol_obj):
 
 # 获取函数参数
 def get_fun_param(protocol_obj):
-    str = ""
+    str = "Player, "
     for tmp_param in protocol_obj.erl_param:
         str += "%s, "%(tmp_param)
     return str[:-2]
