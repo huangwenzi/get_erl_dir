@@ -55,7 +55,7 @@ def create_file(mod, mod_name):
     # 目录是否存在
     dir_path = CfgMod.out_path + "/" + mod_name
     if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
+        os.makedirs(dir_path)
     pro_mod.dir_path = dir_path
     # 生成hrl文件
     HrlMod.create_hrl_file(pro_mod)
