@@ -90,11 +90,17 @@ def get_lib_file_api_str(pro_mod):
 -export([
     first_init/0,
     on_first_login_event/2,
-    on_login_event/2,
-    on_zero_timer_event/2,
+%s
 
 
 """
+    # 非必要事件函数
+    if CfgMod.need_event_fun:
+        event_fun_str = "\ton_login_event/2,\n\ton_zero_timer_event/2,"
+        api_str = api_str%(event_fun_str)
+    else:
+        api_str = api_str%("")
+        
     # 遍历协议
     for protocol_key in pro_mod.request_key:
         api_str += get_api_str_1(pro_mod, protocol_key)
@@ -123,23 +129,31 @@ def get_lib_file_init_str():
     init_fun ="""
 %% 初始化模块
 first_init() ->
-	event_dispatcher:add_event_listener_once(?EVENT_AFTER_FIRST_INIT, ?MODULE, on_first_login_event),
-	event_dispatcher:add_event_listener(?EVENT_PLAYER_LOGIN, ?MODULE, on_login_event),
-	event_dispatcher:add_event_listener(?EVENT_ZERO_TIMER, ?MODULE, on_zero_timer_event).
+	event_dispatcher:add_event_listener_once(?EVENT_AFTER_FIRST_INIT, ?MODULE, on_first_login_event)%s
 
 %% 登录初始化
 on_first_login_event(_Player, _Param) ->
 	ok.
 
+%s
+
+"""
+    # 非必要事件函数
+    if CfgMod.need_event_fun:
+        event_fun_str = """,\n\tevent_dispatcher:add_event_listener(?EVENT_PLAYER_LOGIN, ?MODULE, on_login_event),
+\tevent_dispatcher:add_event_listener(?EVENT_ZERO_TIMER, ?MODULE, on_zero_timer_event)."""
+        event_fun_str_1 = """
 %% 登录事件
 on_login_event(_Player, _Param) ->
 	ok.
 
 %% 零点事件
 on_zero_timer_event(_Player, _Param) ->
-	ok.
+	ok."""
+        init_fun = init_fun%(event_fun_str, event_fun_str_1)
+    else:
+        init_fun = init_fun%(".", "")
 
-"""
     return init_fun
 
 # 获取lib lib_fun字符串

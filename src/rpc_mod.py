@@ -118,8 +118,8 @@ def get_rpc_file_protocol_fun_str(pro_mod, protocol_key):
 %%%% {0}
 handle(#{1}{{{2}}}, Player) ->
     case {3}_lib:{4}({5}) of
-        {{ok, Notify}} ->
-            {{reply, Notify}};
+        {{ok, Reply}} ->
+            {{reply, Reply}};
         {{false, Code}} ->
             {{reply, #{6}{{code = Code}}}}
     end;\n"""
