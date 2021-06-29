@@ -293,7 +293,7 @@ do_%s(%s) ->
 def replace_lib_fun_param(str, pro_mod, protocol_obj):
     protocol_key = protocol_obj.protocol_key
     # api_str是否存在
-    api_str = get_api_str_1(pro_mod, protocol_key)[:-2]
+    api_str = get_api_str_1(pro_mod, protocol_key)[:-4]
     if str.find(api_str) == -1:
         return str,False
     
