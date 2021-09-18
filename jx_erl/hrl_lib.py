@@ -13,7 +13,9 @@ import jx_erl.cfg as CfgLib
 # 生成hrl文件
 def create_file(mod_name):
     # hrl文件名
-    file_name = "{0}/{1}.hrl".format(CfgLib.out_hrl_path, mod_name)
+    file_name = "{0}/{1}.hrl".format(CfgLib.hrl_path, mod_name)
+    # 目录不存在就创建
+    HelpLib.create_dir(CfgLib.hrl_path)
     str = ""
     # 文件是否存在
     if not os.path.exists(file_name):

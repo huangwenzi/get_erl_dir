@@ -22,7 +22,9 @@ handle_c2s(Proto, #role_state{id = RoleId}) ->
 # 生成rpc文件
 def create_file(mod_name, protocols):
     # rpc文件名
-    file_name = "{0}/mod_{1}.erl".format(CfgLib.out_path, mod_name)
+    file_name = "{0}/mod_{1}.erl".format(CfgLib.mod_path, mod_name)
+    # 目录不存在就创建
+    HelpLib.create_dir(CfgLib.mod_path)
     str = ""
     mod_pro = protocols[mod_name]
     # 文件是否存在

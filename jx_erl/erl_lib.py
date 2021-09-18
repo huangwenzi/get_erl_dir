@@ -11,39 +11,46 @@ import jx_erl.cfg as CfgLib
 # 生成internal文件
 def create_file(mod_name, records, protocols):
     # internal文件名
-    file_name = "{0}/{1}_internal.erl".format(CfgLib.out_path, mod_name)
+    file_name = "{0}/{1}_internal.erl".format(CfgLib.internal_path, mod_name)
+    # 目录不存在就创建
+    HelpLib.create_dir(CfgLib.internal_path)
+    mod_pro = protocols[mod_name]
     str = ""
     # 文件是否存在
     if os.path.exists(file_name):
         # 存在文件
         with open(file_name, 'r', encoding = "utf-8") as f:
             str = f.read()
-        # # 遍历协议
-        # mod_pro = protocols[mod_name]
-        # for protocol_key in mod_pro.protocol:
-        #     protocol = mod_pro.protocol[protocol_key]
-        #     # 替换已存在的函数参数
-        #     str,ret = replace_lib_fun_param(str, protocol)
-        #     # 添加不存在的函数
-        #     if not ret:
-        #         str = add_lib_fun_param(str, protocol)
+        # 遍历协议
+        last_protocol = None
+        for protocol_key in mod_pro.protocol:
+            protocol = mod_pro.protocol[protocol_key]
+            # 替换已存在的函数参数
+            ret,str = replace_protocol_fun_param(str, protocol)
+            # 添加不存在的函数
+            if not ret:
+                str = add_protocol_fun_param(str, mod_name, protocol, last_protocol)
+            last_protocol = protocol
             
-        # # 遍历结构
-        # for record_obj in pro_mod.mod.record_define:
-        #     # 添加不存在的结构转换函数
-        #     str = add_record_p_str(str, pro_mod, record_obj)
+        # 遍历结构
+        record_list = get_mod_record_list(mod_pro, protocols)
+        for record_key in record_list:
+            # 是否在str中
+            if str.find("to_p_" + record_key + "(") > 0:
+                continue
+            else:
+                str += get_record_p_str_1(records[record_key])
     else:
         # 不存在文件
         # 创建新的internal文件
-        str = create_internal_file(mod_name, records, protocols)
+        str = create_internal_file(mod_name, records, protocols, mod_pro)
         
     # 写到文件
     with open(file_name, 'w', encoding = "utf-8") as f:
         f.write(str)
 
 # 创建新的rpc文件
-def create_internal_file(mod_name, records, protocols):
-    mod_pro = protocols[mod_name]
+def create_internal_file(mod_name, records, protocols, mod_pro):
     # 文件开头
     str = HelpLib.get_file_head_str()
     # mod字符串
@@ -170,9 +177,10 @@ check_{1}(RoleId{2}) ->
 
     
 
-# 获取 获取字符串
+# 获取 获取函数
 def get_internal_file_get_str(pro_mod):
     get_str = """
+%%========================================获取函数
 %% 获取全部数据
 get_all_info() ->
     cache:list({0}).
@@ -204,10 +212,20 @@ set_data_info(Info) ->
 # 结构转换函数
 def get_record_p_str(records, mod_pro, protocols):
     # 协议包含的结构体
+    record_list = get_mod_record_list(mod_pro, protocols)
+    # 生成字符串
+    str = "%%========================================结构转换函数\n"
+    for record in record_list:
+        str += get_record_p_str_1(records[record])
+    return str 
+# 其他协议不存在的结构
+def get_mod_record_list(mod_pro, protocols):
+    # 协议包含的结构体
     record_list = get_record_list(mod_pro)
     # 是否也在别的协议里
     for protocol_key in protocols:
         tmp_mod_pro = protocols[protocol_key]
+        # 同mod跳过
         if tmp_mod_pro.name == mod_pro.name:
             continue
         tmp_record_list = get_record_list(tmp_mod_pro)
@@ -216,12 +234,8 @@ def get_record_p_str(records, mod_pro, protocols):
             if item not in tmp_record_list:
                 sub_record_list.append(item)
         record_list = sub_record_list
-    # 生成字符串
-    str = ""
-    for record in record_list:
-        str += get_record_p_str_1(records[record])
-    return str 
- # 协议包含的结构体
+    return record_list
+# 协议包含的结构体
 def get_record_list(mod_pro):
     base_type = ["int32", "int64", "uint32", "uint64", "string"]
     record_list = []
@@ -260,142 +274,59 @@ def get_record_p_str_1(record):
     )
     return str 
 
-# 获取 check字符串
-def get_internal_file_check_str(pro_mod):
-    str = "\n\n\n%% @doc 检查函数"
-    for protocol_key in pro_mod.request_key:
-        str += get_internal_file_check_str_1(pro_mod, protocol_key)
-    return str
-
-def get_internal_file_check_str_1(pro_mod, protocol_key):
-    check_fun = """
-%%%% @doc 检查%s
-check_%s(%s) ->
-	ok.
-    """
-    protocol_obj = pro_mod.protocol_map[protocol_key]
-    tmp_check_fun = check_fun%(
-        protocol_obj.desc[2:]
-        , HelpLib.get_fun_name(pro_mod, protocol_key)
-        , HelpLib.get_fun_param(protocol_obj)
-    )
-    return tmp_check_fun
-
-# 获取 do字符串
-def get_internal_file_do_str(pro_mod):
-    str = "\n\n\n%% @doc 修改函数"
-    for protocol_key in pro_mod.request_key:
-        str += get_internal_file_do_str_1(pro_mod, protocol_key)
-    return str
-
-def get_internal_file_do_str_1(pro_mod, protocol_key):
-    do_fun = """
-%%%% @doc %s
-do_%s(%s) ->
-	{ok, #%s{}}.
-    """
-    protocol_obj = pro_mod.protocol_map[protocol_key]
-    tmp_do_fun = do_fun%(
-        protocol_obj.desc[2:]
-        , HelpLib.get_fun_name(pro_mod, protocol_key)
-        , HelpLib.get_fun_param(protocol_obj)
-        , protocol_key.replace("request", "reply")
-    )
-    return tmp_do_fun
-
 
 # 替换已存在的函数参数
-def replace_lib_fun_param(str, pro_mod, protocol_obj):
-    protocol_key = protocol_obj.protocol_key
-    # api_str是否存在
-    api_str = get_internal_file_api_str(pro_mod, protocol_key)[:-4]
-    if str.find(api_str) == -1:
-        return str,False
+def replace_protocol_fun_param(str, protocol):
+    # fun_str是否存在
+    fun_str = "\n" + protocol.name + "("
+    if str.find(fun_str) == -1:
+        return False,str
     
     # 替换rpc接口函数参数
-    fun_name = HelpLib.get_fun_name(pro_mod, protocol_key)
-    begin_str = "\n%s"%(fun_name)
     # 正则匹配函数
-    a = r"(.*)" + begin_str + "\((.*?)\) ->(.*)"
+    fun_str_1 = "\n" + protocol.name + "\("
+    a = r"(.*)" + fun_str_1 + "RoleId(.*?)\) ->(.*)"
     matchObj = re.match(a, str, re.M|re.S)
     if matchObj:
-        str = "{0}{1}({2}) ->{3}".format(
+        str = "{0}{1}RoleId{2}) ->{3}".format(
                 matchObj.group(1)
-                , begin_str
-                , HelpLib.get_fun_param(protocol_obj)
+                , fun_str
+                , HelpLib.get_fun_param(protocol.c2s)
                 , matchObj.group(3)
             )
     else:
         # 匹配不到
-        print("替换rpc接口函数参数 err : %s"%(protocol_key))
+        print("替换rpc接口函数参数 err : %s"%(protocol.name))
         
-    return str,True
+    return True,str
     
-
     
 # 添加不存在的函数
-def add_lib_fun_param(str, pro_mod, protocol_obj):
-    protocol_key = protocol_obj.protocol_key
-    last_protocol_key = HelpLib.get_last_protocol_key(pro_mod, protocol_key)
-    # 添加api_str
-    # 上一个函数所在的位置
-    last_fun_name = HelpLib.get_fun_name(pro_mod, last_protocol_key)
-    api_str = get_internal_file_api_str(pro_mod, last_protocol_key)[:-2]
-    last_fun_name_pos = str.find(api_str)
-    # 上个函数下方函数的位置
-    end_fun_pos = last_fun_name_pos + len(api_str)
-    api_str = get_internal_file_api_str(pro_mod, protocol_key)[:-2]
-    str = str[:end_fun_pos] + ",\n" + api_str +  str[end_fun_pos:]
+def add_protocol_fun_param(str, mod_name, protocol, last_protocol):
+    # 添加export_str
+    # 上一个函数所在的位置 不考虑不存在上一个协议
+    last_export_str = get_export_str(last_protocol.c2s)
+    last_export_pos = str.find(last_export_str) + len(last_export_str)
+    str = str[:last_export_pos] + "\n" + get_export_str(protocol.c2s) + str[last_export_pos:]
+#     if last_protocol:
+#         last_export_str = get_export_str(last_protocol.c2s)
+#         last_export_pos = str.find(last_export_str) + len(last_export_str)
+#         str = str[:last_export_pos] + "\n" + get_export_str(protocol.c2s) + str[last_export_pos:]
+#     else:
+#         begin_str = """%% 协议接口
+# -export(["""
+#         last_export_pos = str.find(begin_str) + len(begin_str)
+#         str = str[:last_export_pos] + "\n\t" + get_export_str(protocol.c2s)[2] + str[last_export_pos:]
     
-    # 添加lib_fun
+    # 添加protocol_fun
     # 上一个函数所在的位置
-    last_fun_name = HelpLib.get_fun_name(pro_mod, last_protocol_key)
-    find_str = "\n%s("%(last_fun_name)
+    find_str = "\ncheck_%s("%(last_protocol.name)
     last_fun_name_pos = str.find(find_str)
     # 上个函数下方函数的位置
     end_fun_pos = str.find("\n%%", last_fun_name_pos)
-    lib_fun_str = get_internal_file_mod_str(pro_mod, protocol_key)
-    str = str[:end_fun_pos] + lib_fun_str + "\n" +  str[end_fun_pos:]
+    c2s_record = protocol.c2s
+    protocol_fun = get_protocol_fun_str(mod_name, c2s_record)
+    check_fun = get_check_fun_str(c2s_record)
+    str = str[:end_fun_pos] + protocol_fun + check_fun + "\n" +  str[end_fun_pos:]
     
-    # 添加check_fun
-    # 上一个函数所在的位置
-    find_str = "\ncheck_%s("%(last_fun_name)
-    last_fun_name_pos = str.find(find_str)
-    # 上个函数下方函数的位置
-    end_fun_pos = str.find("\n%%", last_fun_name_pos)
-    check_fun_str = get_internal_file_check_str_1(pro_mod, protocol_key)
-    str = str[:end_fun_pos] + check_fun_str + "\n" +  str[end_fun_pos:]
-    
-    # 添加do_fun
-    # 上一个函数所在的位置
-    find_str = "\ndo_%s("%(last_fun_name)
-    last_fun_name_pos = str.find(find_str)
-    # 上个函数下方函数的位置
-    end_fun_pos = str.find("\n%%", last_fun_name_pos)
-    do_fun_str = get_internal_file_do_str_1(pro_mod, protocol_key)
-    str = str[:end_fun_pos] + do_fun_str + "\n" +  str[end_fun_pos:]
-    
-    return str
-
-# 添加结构转换函数
-def add_record_p_str(str, pro_mod, record_obj):
-    # 结构转换函数是否存在
-    record_name = record_obj[0]
-    find_str = "\nto_%s("%(record_name)
-    if str.find(find_str) >= 0:
-        return str
-    
-    # 上一个函数所在位置
-    last_record_key = HelpLib.get_last_record_key(pro_mod, record_obj[0])
-    find_str = "\nto_%s("%(last_record_key)
-    last_fun_name_pos = str.find(find_str)
-    # 是否存在上一个的位置
-    if last_fun_name_pos == -1:
-        # 获取save_info的位置
-        find_str = "\nsave_info("
-        last_fun_name_pos = str.find(find_str)
-    # 上个函数下方函数的位置
-    end_fun_pos = str.find("\n%%", last_fun_name_pos)
-    record_p_str = get_record_p_str_1(record_obj)
-    str = str[:end_fun_pos] + record_p_str + "\n" +  str[end_fun_pos:]
     return str

@@ -6,6 +6,10 @@
 			<f t="int32" name="k" desc="key"/>
 			<f t="int64" name="v" desc="v值"/>
 		</type>
+		<type name="p_key_value_1" desc="k_v_str">
+			<f t="int32" name="k" desc="key"/>
+			<f t="int64" name="v" desc="v值"/>
+		</type>
 		<type name="p_recruit_pool" desc="招聘奖池信息">
 			<f t="uint32" name="type" desc="奖池类型"/>
 			<f t="uint32" name="luck_draw_time" desc="上次抽奖时间"/>
@@ -53,12 +57,22 @@
 				<f t="uint32" name="code" desc="错误码"/>
 				<loop t="p_key_value" name="contacts" desc="人脉值 类型,v数量"/>
 				<loop t="uint32" name="staff_list" desc="人才id列表"/>
-				<loop t="p_key_value" name="reward_item" desc="奖励道具id,v数量"/>
+				<loop t="p_key_value_1" name="reward_item" desc="奖励道具id,v数量"/>
 			</s2c>
 		</msg>
 		<msg id="5" name="change_state" desc="修改动画状态">
 			<c2s>
 				<f t="uint32" name="type" desc="卡池id"/>
+			</c2s>
+			<s2c>
+				<f t="uint32" name="code" desc="错误码"/>
+				<f t="uint32" name="type" desc="卡池id"/>
+			</s2c>
+		</msg>
+		<msg id="6" name="test" desc="测试">
+			<c2s>
+				<f t="uint32" name="type" desc="卡池id"/>
+				<f t="uint32" name="type_1" desc="卡池id"/>
 			</c2s>
 			<s2c>
 				<f t="uint32" name="code" desc="错误码"/>
