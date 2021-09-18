@@ -40,8 +40,8 @@ def create_hrl_file(mod_name):
 def get_def_str(mod_name):
     str = """
 
--ifndef({0}_H_H_).
--define({0}_H_H_, true).
+-ifndef({0}_HRL).
+-define({0}_HRL, true).
 
     """
     mod_name_1 = mod_name.upper()

@@ -7,7 +7,6 @@
 author_name = "hw"
 
 # 输出文件地址
-out_path = "get_erl_dir"
-internal_path = "get_erl_dir"
-hrl_path = "get_erl_dir"
-mod_path = "get_erl_dir"
+internal_path = "D:/code/svr/src"
+hrl_path = "D:/code/svr/include"
+mod_path = "D:/code/svr/src/mod"

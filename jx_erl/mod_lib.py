@@ -77,11 +77,12 @@ handle_c2s_1(C2sRec, RoleState) ->
 def replace_fun_param(str, mod_name, protocol):
     # 替换record参数
     # 注意()前面的\,会影响正则匹配
-    begin_str = "\nhandle_c2s_1\(#%s{"%(mod_name + protocol.name + "c2s")
+    begin_str = "\nhandle_c2s_1\(#%s_%s_c2s{"%(mod_name, protocol.name)
     # 正则匹配函数
     a = r"(.*)" + begin_str + "(.*?)}, RoleId(.*)"
     matchObj = re.match(a, str, re.M|re.S)
     if matchObj:
+        begin_str = "\nhandle_c2s_1(#%s_%s_c2s{"%(mod_name, protocol.name)
         str = matchObj.group(1) + begin_str + HelpLib.get_record_param(protocol.c2s) + "}, RoleId" + matchObj.group(3)
     else:
         # 匹配不到，说明没有这个函数
@@ -90,9 +91,10 @@ def replace_fun_param(str, mod_name, protocol):
     # 替换lib参数
     "luck_draw_internal:recruit_one(RoleId, Type);"
     begin_str = "%s_internal:%s\(RoleId"%(mod_name, protocol.name)
-    a = r"(.*)" + begin_str + "(.*?))(.*)"
+    a = r"(.*)" + begin_str + "(.*?)\)(.*)"
     matchObj = re.match(a, str, re.M|re.S)
     if matchObj:
+        begin_str = "%s_internal:%s(RoleId"%(mod_name, protocol.name)
         str = matchObj.group(1) + begin_str +  HelpLib.get_fun_param(protocol.c2s) + ")" + matchObj.group(3)
     return True,str
     
@@ -230,7 +232,7 @@ def get_protocol_fun_str(mod_name, protocol):
     # 协议函数结构
     protocol_fun = """
 %% {0}
-handle_c2s_1(#{1}_{2}_c2s{{3}}, RoleId) ->
+handle_c2s_1(#{1}_{2}_c2s{{{3}}}, RoleId) ->
     {1}_internal:{2}(RoleId{4});
 """
     # 生成协议函数
@@ -242,4 +244,3 @@ handle_c2s_1(#{1}_{2}_c2s{{3}}, RoleId) ->
         , HelpLib.get_fun_param(protocol.c2s)
     )
     return tmp_protocol_fun
-

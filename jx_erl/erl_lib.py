@@ -11,9 +11,9 @@ import jx_erl.cfg as CfgLib
 # 生成internal文件
 def create_file(mod_name, records, protocols):
     # internal文件名
-    file_name = "{0}/{1}_internal.erl".format(CfgLib.internal_path, mod_name)
+    file_name = "{0}/{1}/{1}_internal.erl".format(CfgLib.internal_path, mod_name)
     # 目录不存在就创建
-    HelpLib.create_dir(CfgLib.internal_path)
+    HelpLib.create_dir(CfgLib.internal_path + "/" + mod_name)
     mod_pro = protocols[mod_name]
     str = ""
     # 文件是否存在
@@ -242,15 +242,17 @@ def get_record_list(mod_pro):
     for protocol_key in mod_pro.protocol:
         protocol = mod_pro.protocol[protocol_key]
         c2s_record = protocol.c2s
-        for key in c2s_record.keys:
-            key = c2s_record.keys[key]
-            if key.type not in base_type and key.type not in record_list:
-                record_list.append(key.type)
+        if c2s_record:
+            for key in c2s_record.keys:
+                key = c2s_record.keys[key]
+                if key.type not in base_type and key.type not in record_list:
+                    record_list.append(key.type)
         s2c_record = protocol.s2c
-        for key in s2c_record.keys:
-            key = s2c_record.keys[key]
-            if key.type not in base_type and key.type not in record_list:
-                record_list.append(key.type)
+        if s2c_record:
+            for key in s2c_record.keys:
+                key = s2c_record.keys[key]
+                if key.type not in base_type and key.type not in record_list:
+                    record_list.append(key.type)
     return record_list
 # 玩法数据结构
 def get_record_p_str_1(record):
